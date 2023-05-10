@@ -25,30 +25,37 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def get_post(post_id):
+def get_all_books():
     conn = get_db_connection()
-    post = conn.execute('SELECT * FROM posts WHERE id = ?',
-                        (post_id,)).fetchone()
+    books = conn.execute('SELECT * FROM books').fetchall()
     conn.close()
-    if post is None:
-        abort(404)
-    return post
+    return books
+
+def get_book(book_id):
+    conn = get_db_connection()
+    book = conn.execute('SELECT * FROM books WHERE id = ?',
+                        (book_id,)).fetchone()
+    conn.close()
+    return book
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    posts = conn.execute('SELECT * FROM posts').fetchall()
-    conn.close()
-    return render_template('index.html', posts=posts)
+    books = get_all_books()
+    return render_template('index.html', books=books)
 
 
-@app.route('/<int:post_id>')
-def post(post_id):
-    post = get_post(post_id)
-    return render_template('post.html', post=post)
+
+@app.route('/<int:book_id>')
+def book(book_id):
+    book = get_book(book_id)
+    print(book)
+    if book is None:
+        abort(404)
+
+    return render_template('book.html', book=book)
 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
@@ -61,45 +68,45 @@ def create():
         elif not content:
             flash('Content is required!')
         else:
-            conn = get_db_connection()
-            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
-                         (title, content))
-            conn.commit()
-            conn.close()
-            return redirect(url_for('index'))
+            post = get_book(title)
+            if post is None:
+                flash('Title already exists!')
+            else:
+                conn = get_db_connection()
+                conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
+                                (title, content))
+                conn.commit()
+                conn.close()
+                return redirect(url_for('index'))
         
     return render_template('create.html')
 
 @app.route('/<int:id>/edit', methods=('GET', 'POST'))
 def edit(id):
-    post = get_post(id)
+    book = get_book(id)
+    if book is None:
+        abort(404)
+
 
     if request.method == 'POST':
         title = request.form['title']
-        content = request.form['content']
+        summary = request.form['summary']
+    
+        conn = get_db_connection()
+        conn.execute('UPDATE books SET title = ?, summary = ?'
+                        ' WHERE id = ?',
+                        (title, summary, id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('index'))
 
-        ledige_bøker = last_inn_ledige_bøker()
-        funnet_bok = None
-        for bok in ledige_bøker:
-            if bok.navn == title:
-                funnet_bok = bok
-
-        if funnet_bok is not None:
-            conn = get_db_connection()
-            conn.execute('UPDATE posts SET title = ?, content = ?'
-                         ' WHERE id = ?',
-                         (title, content, id))
-            conn.commit()
-            conn.close()
-            return redirect(url_for('index'))
-        else:
-            flash("Boken eksisterer ikke")
-
-    return render_template('edit.html', post=post)
+    return render_template('edit.html', book=book)
 
 @app.route('/<int:id>/delete', methods=('POST',))
 def delete(id):
-    post = get_post(id)
+    post = get_book(id)
+    if post is None:
+        abort(404)
     conn = get_db_connection()
     conn.execute('DELETE FROM posts WHERE id = ?', (id,))
     conn.commit()

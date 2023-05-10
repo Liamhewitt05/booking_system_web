@@ -51,3 +51,9 @@ Linux / MacOS
 . ./.env/bin/activate
 python main.py
 ```
+
+## Refleksjon
+
+* har tidligere brukt json filer for å lagre data, men har funnet ut at databaser funker bedre fordi flere kan bruke samtidig.
+* Hadde en plan fra starten, men bestemte å endre noe FLASK + REACT -> FLASK WITH JINJA + HTML. MNight try using React later if time.
+* I had to refactor my code to make it easier to understand.
