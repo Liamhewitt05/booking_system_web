@@ -42,7 +42,7 @@ pip install -r requirements.txt
 Windows
 ```bash
 .env\Scripts\activate.bat
-python main.py
+python init_db.py
 ```
 
 Linux / MacOS
@@ -68,7 +68,7 @@ From the root of your cloned repo run the following:
 ### To run the web server
 
 ```bash
-python flask run --debug
+flask run --debug
 ```
 
 ## Running in Azure
