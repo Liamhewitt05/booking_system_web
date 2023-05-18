@@ -73,7 +73,7 @@ def create():
                 flash('Title already exists!')
             else:
                 conn = get_db_connection()
-                conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
+                conn.execute('INSERT INTO books (title, content) VALUES (?, ?)',
                                 (title, content))
                 conn.commit()
                 conn.close()
@@ -91,11 +91,12 @@ def edit(id):
     if request.method == 'POST':
         title = request.form['title']
         summary = request.form['summary']
-    
+        count = request.form['count']
+
         conn = get_db_connection()
-        conn.execute('UPDATE books SET title = ?, summary = ?'
+        conn.execute('UPDATE books SET title = ?, summary = ?, count = ?'
                         ' WHERE id = ?',
-                        (title, summary, id))
+                        (title, summary, count, id))
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
@@ -108,7 +109,7 @@ def delete(id):
     if post is None:
         abort(404)
     conn = get_db_connection()
-    conn.execute('DELETE FROM posts WHERE id = ?', (id,))
+    conn.execute('DELETE FROM books WHERE id = ?', (id,))
     conn.commit()
     conn.close()
     flash('"{}" was successfully deleted!'.format(post['title']))
