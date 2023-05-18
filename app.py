@@ -38,6 +38,13 @@ def get_book(book_id):
     conn.close()
     return book
 
+def get_book_by_title(title):
+    conn = get_db_connection()
+    book = conn.execute('SELECT * FROM books WHERE title = ?',
+                        (title,)).fetchone()
+    conn.close()
+    return book
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
 
@@ -51,7 +58,6 @@ def index():
 @app.route('/<int:book_id>')
 def book(book_id):
     book = get_book(book_id)
-    print(book)
     if book is None:
         abort(404)
 
@@ -62,19 +68,22 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        count = request.form['count']
 
         if not title:
             flash('Title is required!')
+        elif not count or int(count) < 0:
+            flash('Antall må være 0 eller høyere')
         elif not content:
             flash('Content is required!')
         else:
-            post = get_book(title)
-            if post is None:
+            book = get_book_by_title(title)
+            if book:
                 flash('Title already exists!')
             else:
                 conn = get_db_connection()
-                conn.execute('INSERT INTO books (title, content) VALUES (?, ?)',
-                                (title, content))
+                conn.execute('INSERT INTO books (title, summary, count) VALUES (?, ?, ?)',
+                                (title, content, count))
                 conn.commit()
                 conn.close()
                 return redirect(url_for('index'))
