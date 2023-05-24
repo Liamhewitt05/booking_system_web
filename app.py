@@ -82,7 +82,7 @@ def create():
                 flash('Title already exists!')
             else:
                 conn = get_db_connection()
-                conn.execute('INSERT INTO books (title, summary, count) VALUES (?, ?, ?)',
+                conn.execute('INSERT INTO books (title, content, count) VALUES (?, ?, ?)',
                                 (title, content, count))
                 conn.commit()
                 conn.close()
